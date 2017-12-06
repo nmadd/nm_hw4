@@ -94,23 +94,15 @@ def scaled_page_rank(graph, num_iter, eps = 1/7.0):
     current_node = starting_node
     # initialize probabilities equally
     probabilities = np.array([[1/graph_size for n in range(graph_size)]]).transpose()
-    print('initial probabilities: ', probabilities)
     for i in range(0, num_iter):
-        print('iteration: ', i)
-        print('starting node: ', starting_node)
         if i == num_iter - 1:
             ending_node = current_node
             ending_nodes.append(ending_node)
         edges = graph.edges_from(current_node)
-        print('edges: ', edges)
         random_step = edges[randint(0, len(edges) - 1)]
-        print('random step: ', random_step)
         current_node = random_step
-        print('current node: ', current_node)
         new_probabilities = matrix.T * probabilities
-        print('new probs', new_probabilities)
         probabilities = new_probabilities
-        print('probabilities: ', probabilities)
 
     # convert probabilities numpy vector to list
     probabilities_list = probabilities.T.tolist()[0]
