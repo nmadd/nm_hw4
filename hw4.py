@@ -4,6 +4,9 @@ authors = ['ncm64','netID2']
 # Which version of python are you using? python 2 or python 3?
 python_version = "python 3"
 
+from random import randint
+import numpy as np
+
 # Important: You are NOT allowed to modify the method signatures (i.e. the arguments and return types each function takes).
 
 # Implement the methods in this class as appropriate. Feel free to add other methods
@@ -14,13 +17,25 @@ class DirectedGraph:
     def __init__(self,number_of_nodes):
         # self.graph = {node: set([edges])}
         self.graph = {}
+        self.matrix = None
+
+    def init_seed_data(self, seed_data = {}):
+        self.graph = seed_data
 
     def add_node(self, node):
-        if origin_node not in self.graph:
-            self.graph[node] = set()
+        if node not in self.graph:
+            # add an edge from each node to itself
+            self.graph[node] = []
+
+    def add_edgeless_nodes(self):
+        for node in self.graph.keys():
+            # if edges list is empty
+            #   add node as an edge to itself
+            if not self.edges_from(node):
+                self.graph[node].append(node)
 
     def add_edge(self, origin_node, destination_node):
-        self.graph[origin_node].add(destination_node)
+        self.graph[origin_node].append(destination_node)
 
     def edges_from(self, origin_node):
         ''' This method shold return a list of all the nodes u such that the edge (origin_node,u) is
@@ -37,23 +52,87 @@ class DirectedGraph:
 
     def number_of_nodes(self):
         ''' This method should return the number of nodes in the graph'''
-        return count(self.graph.keys())
+        return len(self.graph.keys())
 
+    def create_matrix(self):
+        matrix_size = self.number_of_nodes()
+        # initialize empty matrix
+        matrix = [[0 for x in range(matrix_size)] for y in range(matrix_size)]
+        # loop over all nodes j in graph
+        for j in self.graph.keys():
+            # loop over each node's edges i
+            for i in self.edges_from(j):
+                # if there is an edge from j -> i
+                #   set corresponding matrix index to 1 / out-degree(j)
+                if self.check_edge(j, i):
+                    matrix[j][i] = 1 / len(self.edges_from(j))
+                # else there is no edge from j -> i
+                #   set corresponding matrix index to 0
+                else:
+                    matrix[j][i] = 0
+        return np.matrix(matrix)
+        self.matrix = np.matrix(matrix)
+        print(self.matrix)
+
+
+
+    def print_graph(self):
+        print('Graph:', self.graph)
+
+
+# TODO: update to include SCALED ranking
 def scaled_page_rank(graph, num_iter, eps = 1/7.0):
     ''' This method, given a directed graph, should run the epsilon-scaled page-rank
     algorithm for num-iter iterations and return a mapping (dictionary) between a node and its weight.
     In the case of 0 iterations, all nodes should have weight 1/number_of_nodes'''
+    graph_size = graph.number_of_nodes()
+    ending_nodes = []
+    matrix = graph.create_matrix()
 
-    pass
+    # take a random walk of num_steps steps
+    starting_node = randint(0, graph_size - 1)
+    current_node = starting_node
+    # initialize probabilities equally
+    probabilities = np.array([[1/graph_size for n in range(graph_size)]]).transpose()
+    print('initial probabilities: ', probabilities)
+    for i in range(0, num_iter):
+        print('iteration: ', i)
+        print('starting node: ', starting_node)
+        if i == num_iter - 1:
+            ending_node = current_node
+            ending_nodes.append(ending_node)
+        edges = graph.edges_from(current_node)
+        print('edges: ', edges)
+        random_step = edges[randint(0, len(edges) - 1)]
+        print('random step: ', random_step)
+        current_node = random_step
+        print('current node: ', current_node)
+        new_probabilities = matrix.T * probabilities
+        print('new probs', new_probabilities)
+        probabilities = new_probabilities
+        print('probabilities: ', probabilities)
+
+    # convert probabilities numpy vector to list
+    probabilities_list = probabilities.T.tolist()[0]
+    # convert probabilities list into mapping between node and its weight
+    return dict(zip([x for x in range(graph_size)], probabilities_list))
+
 
 def graph_15_1_left():
     ''' This method, should construct and return a DirectedGraph encoding the left example in fig 15.1
     Use the following indexes: A:0, B:1, C:2, Z:3 '''
-    pass
+    seed_data = {0: [1], 1: [2], 2: [3], 3: [3]}
+    graph = DirectedGraph(4)
+    graph.init_seed_data(seed_data)
+    return graph
 
 def graph_15_1_right():
     ''' This method, should construct and return a DirectedGraph encoding the right example in fig 15.1
     Use the following indexes: A:0, B:1, C:2, Z1:3, Z2:4'''
+    seed_data = {0: [1], 1: [2], 2: [3], 3: [4], 4: [3]}
+    graph = DirectedGraph(4)
+    graph.init_seed_data(seed_data)
+    return graph
     pass
 
 def graph_15_2():
