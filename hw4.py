@@ -1,5 +1,5 @@
 # Please enter here the netids of all memebers of your group (yourself included.)
-authors = ['ncm64','netID2']
+authors = ['ncm64','dm458','mok24']
 
 # Which version of python are you using? python 2 or python 3?
 python_version = "python 3"
