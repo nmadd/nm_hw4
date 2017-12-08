@@ -4,7 +4,7 @@ authors = ['ncm64','netID2']
 # Which version of python are you using? python 2 or python 3?
 python_version = "python 3"
 
-from random import randint
+from random import randint, random
 import numpy as np
 
 # Important: You are NOT allowed to modify the method signatures (i.e. the arguments and return types each function takes).
@@ -15,9 +15,15 @@ import numpy as np
 class DirectedGraph:
 
     def __init__(self,number_of_nodes):
-        # self.graph = {node: set([edges])}
+        # self.graph = {node: [edges]}
         self.graph = {}
         self.matrix = None
+        self.size = number_of_nodes
+        self.init_nodes(number_of_nodes)
+
+    def init_nodes(self, number_of_nodes):
+        for node in range(number_of_nodes):
+            self.add_node(node)
 
     def init_seed_data(self, seed_data = {}):
         self.graph = seed_data
@@ -35,6 +41,10 @@ class DirectedGraph:
                 self.graph[node].append(node)
 
     def add_edge(self, origin_node, destination_node):
+        if origin_node not in self.graph:
+            self.add_node(origin_node)
+        if destination_node not in self.graph:
+            self.add_node(destination_node)
         self.graph[origin_node].append(destination_node)
 
     def edges_from(self, origin_node):
@@ -45,7 +55,9 @@ class DirectedGraph:
     def check_edge(self, origin_node, destination_node):
         ''' This method should return true is there is an edge between origin_node and destination_node
         and destination_node, and false otherwise'''
-        if destination_node in self.graph[origin_node]:
+        if destination_node not in self.graph or origin_node not in self.graph:
+            return False
+        elif destination_node in self.graph[origin_node]:
             return True
         else:
             return False
@@ -54,7 +66,7 @@ class DirectedGraph:
         ''' This method should return the number of nodes in the graph'''
         return len(self.graph.keys())
 
-    def create_matrix(self):
+    def create_matrix(self, eps = 1/7):
         matrix_size = self.number_of_nodes()
         # initialize empty matrix
         matrix = [[0 for x in range(matrix_size)] for y in range(matrix_size)]
@@ -80,27 +92,26 @@ class DirectedGraph:
         print('Graph:', self.graph)
 
 
-# TODO: update to include SCALED ranking
 def scaled_page_rank(graph, num_iter, eps = 1/7.0):
     ''' This method, given a directed graph, should run the epsilon-scaled page-rank
     algorithm for num-iter iterations and return a mapping (dictionary) between a node and its weight.
     In the case of 0 iterations, all nodes should have weight 1/number_of_nodes'''
     graph_size = graph.number_of_nodes()
-    ending_nodes = []
     matrix = graph.create_matrix()
 
-    # take a random walk of num_steps steps
-    starting_node = randint(0, graph_size - 1)
-    current_node = starting_node
     # initialize probabilities equally
     probabilities = np.array([[1/graph_size for n in range(graph_size)]]).transpose()
-    for i in range(0, num_iter):
-        if i == num_iter - 1:
-            ending_node = current_node
-            ending_nodes.append(ending_node)
-        edges = graph.edges_from(current_node)
-        random_step = edges[randint(0, len(edges) - 1)]
-        current_node = random_step
+    for i in range(num_iter):
+        evaporated_weight = 0
+        probabilities_list = probabilities.T.tolist()[0]
+        scaled_probabilities = []
+        for prob in probabilities_list:
+            scaled_probabilities.append(prob * (1 - eps))
+            evaporated_weight += prob * eps
+        scaled_probabilities_plus_evaporated_weight = [i + evaporated_weight/graph_size for i in scaled_probabilities]
+        rounded_probabilities = [round(i, 4) for i in scaled_probabilities_plus_evaporated_weight]
+        probabilities = np.array([rounded_probabilities]).transpose()
+        # recalculate probabilties by multiplying graph matrix by probabilities vector
         new_probabilities = matrix.T * probabilities
         probabilities = new_probabilities
 
@@ -125,7 +136,6 @@ def graph_15_1_right():
     graph = DirectedGraph(4)
     graph.init_seed_data(seed_data)
     return graph
-    pass
 
 def graph_15_2():
     ''' This method, should construct and return a DirectedGraph encoding example 15.2
@@ -134,30 +144,64 @@ def graph_15_2():
 
 def extra_graph_1():
     ''' This method, should construct and return a DirectedGraph of your choice with at least 10 nodes'''
-    pass
+    seed_data = {0: [1, 9], 1: [2, 9], 2: [3, 9], 3: [4, 9], 4: [5, 9], 5: [6, 9], 6: [7, 9], 7: [8, 9], 8: [9], 9: [0]}
+    graph = DirectedGraph(10)
+    graph.init_seed_data(seed_data)
+    return graph
 
 # This dictionary should contain the expected weights for each node when running the scaled page rank on the extra_graph_1 output
 # with epsilon = 0.07 and num_iter = 20.
-extra_graph_1_weights = {1 : 0, 2: 0, 3 : 0, 4: 0, 5 : 0, 6: 0, 7 : 0, 8: 0, 9 : 0}
+extra_graph_1_weights = {0: 0.3176, 1: 0.14325, 2: 0.06855, 3: 0.0365, 4: 0.0228, 5: 0.0169, 6: 0.0144, 7: 0.0133, 8: 0.01285, 9: 0.35385}
 
 def extra_graph_2():
     ''' This method, should construct and return a DirectedGraph of your choice with at least 10 nodes'''
-    pass
+    seed_data = {0: [1], 1: [2], 2: [3], 3: [4], 4: [5, 6], 5: [6, 4], 6: [4, 5], 7: [8], 8: [9], 9: [0]}
+    graph = DirectedGraph(10)
+    graph.init_seed_data(seed_data)
+    return graph
 
 # This dictionary should contain the expected weights for each node when running the scaled page rank on the extra_graph_2 output
 # with epsilon = 0.07 and num_iter = 20.
-extra_graph_2_weights = {1 : 0, 2: 0, 3 : 0, 4: 0, 5 : 0, 6: 0, 7 : 0, 8: 0, 9 : 0}
+extra_graph_2_weights = {0: 0.037, 1: 0.046, 2: 0.0537, 3: 0.0603, 4: 0.2848, 5: 0.2386, 6: 0.2386, 7: 0.0, 8: 0.0143, 9: 0.0265}
 
 
 def facebook_graph(filename = "facebook_combined.txt"):
     ''' This method should return a DIRECTED version of the facebook graph as an instance of the DirectedGraph class.
     In particular, if u and v are friends, there should be an edge between u and v and an edge between v and u.'''
-    pass
+    graphData = []
+    data = open(filename)
+    lines = data.read().splitlines()
+    for line in lines:
+        graphData.append(line.split())
+    new_graph = DirectedGraph(4031)
+    for pair in graphData:
+        node1 = int(pair[0])
+        node2 = int(pair[1])
+        new_graph.add_edge(node1, node2)
+        new_graph.add_edge(node2, node1)
+    return new_graph
 
 
 # The code necessary for your measurements for question 8b should go in this function.
 # Please COMMENT THE LAST LINE OUT WHEN YOU SUBMIT (as it will be graded by hand and we do not want it to interfere
 # with the automatic grader).
 def question8b():
-    pass
+    result = scaled_page_rank(facebook_graph(), 20)
+    results_list = [[key, val] for key,val in result.items()]
+    # write highest and lowest hundred nodes to highest.txt and lowest.txt
+    lowest = sorted(results_list, key=lambda pair: pair[1])
+    lowest_hundred = lowest[0:100]
+    highest = list(reversed(lowest))
+    highest_hundred = highest[0:100]
+    f = open('highest.txt','a')
+    f.write('Highest:')
+    for x in highest_hundred:
+        f.write('\n' + 'node: {} weight {}'.format(x[0], x[1]))
+    f.close()
+    g = open('lowest.txt','a')
+    g.write('Lowest:')
+    for y in lowest_hundred:
+        g.write('\n' + 'node: {} weight {}'.format(y[0], y[1]))
+    g.close()
+
 question8b()
