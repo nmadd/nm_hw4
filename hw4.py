@@ -13,7 +13,6 @@ import numpy as np
 # and attributes as needed.
 # Assume that nodes are represented by indices between 0 and number_of_nodes - 1
 class DirectedGraph:
-
     def __init__(self,number_of_nodes):
         # self.graph = {node: [edges]}
         self.graph = {}
@@ -86,8 +85,6 @@ class DirectedGraph:
         self.matrix = np.matrix(matrix)
         print(self.matrix)
 
-
-
     def print_graph(self):
         print('Graph:', self.graph)
 
@@ -133,14 +130,17 @@ def graph_15_1_right():
     ''' This method, should construct and return a DirectedGraph encoding the right example in fig 15.1
     Use the following indexes: A:0, B:1, C:2, Z1:3, Z2:4'''
     seed_data = {0: [1], 1: [2], 2: [3], 3: [4], 4: [3]}
-    graph = DirectedGraph(4)
+    graph = DirectedGraph(5)
     graph.init_seed_data(seed_data)
     return graph
 
 def graph_15_2():
     ''' This method, should construct and return a DirectedGraph encoding example 15.2
         Use the following indexes: A:0, B:1, C:2, A':3, B':4, C':5'''
-    pass
+    seed_data = {0: [1], 1: [2], 2: [0], 3: [4], 4: [5], 5:[3]}
+    graph = DirectedGraph(6)
+    graph.init_seed_data(seed_data)
+    return graph
 
 def extra_graph_1():
     ''' This method, should construct and return a DirectedGraph of your choice with at least 10 nodes'''
@@ -204,4 +204,4 @@ def question8b():
         g.write('\n' + 'node: {} weight {}'.format(y[0], y[1]))
     g.close()
 
-question8b()
+# question8b()
